@@ -1,4 +1,4 @@
-name: SonarQube Analysis (Final)
+name: SonarQube Analysis (DEBUGGING)
 
 on:
   push:
@@ -7,15 +7,34 @@ on:
   workflow_dispatch:
 
 jobs:
-  sonarqube:
-    name: SonarQube Scan
+  sonarqube-debug:
+    name: SonarQube Debug and Scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0  
+          fetch-depth: 0
 
+      # =================================================================
+      # BƯỚC GỠ LỖI ĐẶC BIỆT
+      # =================================================================
+      - name: 🧪 DEBUG - Test API Connection and Token
+        run: |
+          echo "--- BƯỚC 1: KIỂM TRA KẾT NỐI ĐẾN SERVER (KHÔNG CẦN TOKEN) ---"
+          # Lệnh curl -v sẽ hiển thị chi tiết quá trình kết nối
+          curl -v "${{ secrets.SONAR_HOST_URL }}/api/system/health"
+          
+          echo ""
+          echo "--- BƯỚC 2: KIỂM TRA XÁC THỰC BẰNG TOKEN ---"
+          # Lệnh curl -u sẽ dùng token để xác thực. 
+          # Lệnh -f sẽ báo lỗi nếu server trả về lỗi (như 403)
+          curl -v -f -u "${{ secrets.SONAR_TOKEN }}:" "${{ secrets.SONAR_HOST_URL }}/api/user_tokens/search"
+
+      # =================================================================
+      # Bước quét SonarQube gốc (có thể sẽ thất bại lần nữa)
+      # =================================================================
       - name: SonarQube Scan
+        if: always() # Luôn chạy bước này dù bước DEBUG có thất bại hay không
         uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
