@@ -1,3 +1,4 @@
+import os #
 # BUG NGHIÊM TRỌNG: Hai tham số có cùng tên
 # Đây là một lỗi cú pháp và logic rõ ràng mà SonarCloud không thể bỏ qua.
 def process_data(data, data):
