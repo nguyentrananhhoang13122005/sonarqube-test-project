@@ -1,3 +1,4 @@
+import os
 def add_user(username, user_list=[]):
     user_list.append(username)
     return user_list
