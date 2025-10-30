@@ -1,4 +1,5 @@
-import os
+
+db_password = "mySuperSecretPassword123"
 def add_user(username, user_list=[]):
     user_list.append(username)
     return user_list
