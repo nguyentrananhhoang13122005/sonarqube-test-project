@@ -1,7 +1,7 @@
 # VULNERABILITY (LỖ HỔNG BẢO MẬT): Hard-coded password
 # Đây là một lỗi bảo mật nghiêm trọng mà SonarCloud chắc chắn sẽ phát hiện
 # và Quality Gate của bạn sẽ không thể bỏ qua.
-
+import os
 SECRET_KEY = "my-super-secret-password-that-should-not-be-in-code"
 
 def check_access(key_provided):
