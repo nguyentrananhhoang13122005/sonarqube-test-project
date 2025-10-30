@@ -1,12 +1,18 @@
-import os #
-# BUG NGHIÊM TRỌNG: Hai tham số có cùng tên
-# Đây là một lỗi cú pháp và logic rõ ràng mà SonarCloud không thể bỏ qua.
-def process_data(data, data):
-    if data is not None:
-        print("Processing data...")
-        # Dòng code này sẽ không bao giờ được thực thi đúng cách
-        # vì tham số 'data' thứ hai đã ghi đè lên cái thứ nhất.
-        print(f"Received: {data}")
+# VULNERABILITY (LỖ HỔNG BẢO MẬT): Hard-coded password
+# Đây là một lỗi bảo mật nghiêm trọng mà SonarCloud chắc chắn sẽ phát hiện
+# và Quality Gate của bạn sẽ không thể bỏ qua.
 
-# Gọi hàm với một giá trị để kích hoạt phân tích
-process_data("some_value_1", "some_value_2")
+SECRET_KEY = "my-super-secret-password-that-should-not-be-in-code"
+
+def check_access(key_provided):
+    """
+    Một hàm đơn giản để kiểm tra khóa bí mật.
+    Hàm này có lỗ hổng bảo mật nghiêm trọng.
+    """
+    if key_provided == SECRET_KEY:
+        return "Access Granted"
+    else:
+        return "Access Denied"
+
+# In ra để SonarCloud biết code này đang được sử dụng
+print(check_access("some-key"))
