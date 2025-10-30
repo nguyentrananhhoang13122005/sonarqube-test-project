@@ -1,11 +1,9 @@
-name: SonarQube Analysis
+name: SonarQube Analysis (Direct Method)
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 jobs:
@@ -17,8 +15,44 @@ jobs:
         with:
           fetch-depth: 0  
 
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
+      # Bước 1: Cài đặt Java, là yêu cầu để Sonar Scanner chạy
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Bước 2: Tải và cache Sonar Scanner thủ công
+      - name: Cache SonarQube packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache SonarQube scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v3
+        with:
+          path: ./.sonar/scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+          
+      - name: Download SonarQube scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ./.sonar/scanner
+          dotnet tool install dotnet-sonarscanner --tool-path ./.sonar/scanner
+
+      # Bước 3: Chạy Sonar Scanner với các tham số được truyền trực tiếp
+      - name: Run SonarQube Scan
+        run: |
+          ./.sonar/scanner/dotnet-sonarscanner begin \
+            /k:"sonarqube-test-project" \
+            /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          # Lệnh build (nếu có, không bắt buộc với Python)
+          ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Bắt buộc
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
